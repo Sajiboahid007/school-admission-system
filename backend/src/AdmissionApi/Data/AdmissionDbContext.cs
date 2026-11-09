@@ -34,6 +34,12 @@ public class AdmissionDbContext : DbContext
                  v => v.ToString().ToUpperInvariant(),
                  v => Enum.Parse<HoldStatus>(v, true))
              .HasMaxLength(20);
+
+            // R3 safety net: only one HELD or CONFIRMED row per student per class.
+            // EXPIRED / CANCELLED rows are not included, so the student can apply again later.
+            e.HasIndex(x => new { x.ClassId, x.StudentId })
+             .IsUnique()
+             .HasFilter("status IN ('HELD', 'CONFIRMED')");
         });
     }
 }
