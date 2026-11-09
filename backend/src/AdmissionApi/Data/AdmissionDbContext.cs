@@ -16,6 +16,8 @@ public class AdmissionDbContext : DbContext
         {
             e.ToTable("classes");
             e.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            // Closes the race between "does this name exist?" and INSERT.
+            e.HasIndex(x => x.Name).IsUnique();
         });
 
         modelBuilder.Entity<Hold>(e =>
@@ -40,6 +42,10 @@ public class AdmissionDbContext : DbContext
             e.HasIndex(x => new { x.ClassId, x.StudentId })
              .IsUnique()
              .HasFilter("status IN ('HELD', 'CONFIRMED')");
+
+            // Seat counting per class, and "my applications" per student.
+            e.HasIndex(x => new { x.ClassId, x.Status, x.ExpiresAt });
+            e.HasIndex(x => x.StudentId);
         });
     }
 }
