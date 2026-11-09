@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: admission
+      POSTGRES_PASSWORD: admission
+      POSTGRES_DB: admission
+    ports:
+      - "5433:5432"   # 5433 on the host, so it does not clash with a local Postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
