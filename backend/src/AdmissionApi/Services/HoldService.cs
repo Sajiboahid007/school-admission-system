@@ -1,5 +1,7 @@
 using AdmissionApi.Common;
 using AdmissionApi.Data;
+using AdmissionApi.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace AdmissionApi.Services;
@@ -15,5 +17,21 @@ public class HoldService
         _db = db;
         _clock = clock;
         _options = options.Value;
+    }
+
+    public async Task<Hold> CreateHoldAsync(Guid classId, string studentId)
+    {
+        await using var tx = await _db.Database.BeginTransactionAsync();
+
+        var cls = (await _db.Classes
+                .FromSqlInterpolated($"SELECT * FROM classes WHERE id = {classId} FOR UPDATE")
+                .ToListAsync())
+            .FirstOrDefault();
+
+        if (cls is null)
+            throw new AppException(404, "CLASS_NOT_FOUND", "Class not found.");
+
+        await tx.CommitAsync();
+        return new Hold { Class = cls };
     }
 }
