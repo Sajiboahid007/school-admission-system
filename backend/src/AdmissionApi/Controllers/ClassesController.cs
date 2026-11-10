@@ -22,10 +22,14 @@ public class ClassesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateClassRequest request)
     {
+        var name = request.Name!.Trim();
+        if (name.Length == 0)
+            return BadRequest(new { error = "VALIDATION_ERROR", message = "Class name is required." });
+
         var cls = new SchoolClass
         {
             Id = Guid.NewGuid(),
-            Name = request.Name!.Trim(),
+            Name = name,
             TotalSeats = request.TotalSeats!.Value,
             CreatedAt = _clock.UtcNow
         };
