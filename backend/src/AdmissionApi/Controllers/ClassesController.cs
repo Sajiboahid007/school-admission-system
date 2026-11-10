@@ -26,10 +26,10 @@ public class ClassesController : ControllerBase
     {
         var name = request.Name!.Trim();
         if (name.Length == 0)
-            return BadRequest(new { error = "VALIDATION_ERROR", message = "Class name is required." });
+            throw new AppException(400, "VALIDATION_ERROR", "Class name is required.");
 
         if (await _db.Classes.AnyAsync(c => c.Name == name))
-            return Conflict(new { error = "CLASS_EXISTS", message = "A class with this name already exists." });
+            throw new AppException(409, "CLASS_EXISTS", "A class with this name already exists.");
 
         var cls = new SchoolClass
         {
@@ -46,7 +46,7 @@ public class ClassesController : ControllerBase
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
-            return Conflict(new { error = "CLASS_EXISTS", message = "A class with this name already exists." });
+            throw new AppException(409, "CLASS_EXISTS", "A class with this name already exists.");
         }
 
         var body = new ClassResponse(cls.Id.ToString(), cls.Name, cls.TotalSeats, 0, 0, cls.TotalSeats);
@@ -57,22 +57,18 @@ public class ClassesController : ControllerBase
     public Task<List<ClassResponse>> List() => QuerySummariesAsync(_db.Classes);
 
     [HttpGet("{classId}")]
-    public async Task<IActionResult> Get(string classId)
+    public async Task<ClassResponse> Get(string classId)
     {
         var id = ParseClassId(classId);
-        if (id is null)
-            return NotFound(new { error = "CLASS_NOT_FOUND", message = "Class not found." });
-
-        var result = await QuerySummariesAsync(_db.Classes.Where(c => c.Id == id.Value));
-        var cls = result.FirstOrDefault();
-        if (cls is null)
-            return NotFound(new { error = "CLASS_NOT_FOUND", message = "Class not found." });
-
-        return Ok(cls);
+        var result = await QuerySummariesAsync(_db.Classes.Where(c => c.Id == id));
+        return result.FirstOrDefault()
+            ?? throw new AppException(404, "CLASS_NOT_FOUND", "Class not found.");
     }
 
-    private static Guid? ParseClassId(string raw) =>
-        Guid.TryParse(raw, out var id) ? id : null;
+    private static Guid ParseClassId(string raw) =>
+        Guid.TryParse(raw, out var id)
+            ? id
+            : throw new AppException(404, "CLASS_NOT_FOUND", "Class not found.");
 
     private async Task<List<ClassResponse>> QuerySummariesAsync(IQueryable<SchoolClass> query)
     {

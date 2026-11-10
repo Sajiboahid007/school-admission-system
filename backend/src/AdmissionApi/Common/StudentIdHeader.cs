@@ -14,10 +14,10 @@ public static class StudentIdHeader
         var value = request.Headers[Name].ToString().Trim();
 
         if (string.IsNullOrEmpty(value))
-            throw new BadHttpRequestException("X-Student-Id header is required.");
+            throw new AppException(400, "STUDENT_ID_REQUIRED", "X-Student-Id header is required.");
 
         if (!Pattern.IsMatch(value))
-            throw new BadHttpRequestException("Student id must be exactly 17 digits.");
+            throw new AppException(400, "INVALID_STUDENT_ID", "Student id must be exactly 17 digits.");
 
         return value;
     }
