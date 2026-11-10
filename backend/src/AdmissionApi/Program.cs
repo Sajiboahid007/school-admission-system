@@ -27,6 +27,10 @@ builder.Services.AddOptions<HoldOptions>()
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -35,6 +39,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
 app.MapControllers();
 
 await DbInitializer.MigrateAsync(app.Services, app.Logger);
