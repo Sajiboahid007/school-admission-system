@@ -31,6 +31,12 @@ public class HoldService
         if (cls is null)
             throw new AppException(404, "CLASS_NOT_FOUND", "Class not found.");
 
+        var now = _clock.UtcNow;
+
+        await _db.Holds
+            .Where(h => h.ClassId == classId && h.Status == HoldStatus.Held && h.ExpiresAt <= now)
+            .ExecuteUpdateAsync(s => s.SetProperty(h => h.Status, HoldStatus.Expired));
+
         await tx.CommitAsync();
         return new Hold { Class = cls };
     }
