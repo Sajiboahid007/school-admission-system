@@ -110,9 +110,12 @@ public class HoldService
         // Nothing changed: find out why.
         var current = await GetAsync(holdId);
 
-        if (HoldMapper.EffectiveStatus(current, now) == HoldStatus.Confirmed)
-            return current;
-
-        throw new AppException(409, "HOLD_NOT_CONFIRMABLE", "This application cannot be confirmed.");
+        return HoldMapper.EffectiveStatus(current, now) switch
+        {
+            HoldStatus.Confirmed => current,
+            HoldStatus.Expired => throw new AppException(409, "HOLD_EXPIRED", "The time for this application is over."),
+            HoldStatus.Cancelled => throw new AppException(409, "HOLD_CANCELLED", "This application was cancelled."),
+            _ => throw new AppException(409, "HOLD_NOT_CONFIRMABLE", "This application cannot be confirmed.")
+        };
     }
 }
