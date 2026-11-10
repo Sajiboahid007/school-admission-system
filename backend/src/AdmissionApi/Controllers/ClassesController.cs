@@ -4,6 +4,7 @@ using AdmissionApi.Dtos;
 using AdmissionApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace AdmissionApi.Controllers;
 
@@ -39,7 +40,14 @@ public class ClassesController : ControllerBase
         };
 
         _db.Classes.Add(cls);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            return Conflict(new { error = "CLASS_EXISTS", message = "A class with this name already exists." });
+        }
 
         var body = new ClassResponse(cls.Id.ToString(), cls.Name, cls.TotalSeats, 0, 0, cls.TotalSeats);
         return Created($"/classes/{cls.Id}", body);
