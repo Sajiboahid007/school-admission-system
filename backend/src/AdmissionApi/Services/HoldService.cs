@@ -102,6 +102,12 @@ public class HoldService
             return hold;
         }
 
-        return hold;
+        // Nothing changed: find out why.
+        var current = await GetAsync(holdId);
+
+        if (HoldMapper.EffectiveStatus(current, now) == HoldStatus.Confirmed)
+            return current;
+
+        throw new AppException(409, "HOLD_NOT_CONFIRMABLE", "This application cannot be confirmed.");
     }
 }
