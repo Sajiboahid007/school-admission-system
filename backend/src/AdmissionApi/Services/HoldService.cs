@@ -87,6 +87,11 @@ public class HoldService
     public async Task<Hold> ConfirmAsync(Guid holdId, string studentId)
     {
         var hold = await GetAsync(holdId);
+
+        // R4: only your own application
+        if (hold.StudentId != studentId)
+            throw new AppException(403, "NOT_YOUR_HOLD", "This application belongs to another student.");
+
         var now = _clock.UtcNow;
 
         var updated = await _db.Holds
