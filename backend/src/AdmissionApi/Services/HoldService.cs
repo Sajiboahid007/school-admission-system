@@ -37,6 +37,14 @@ public class HoldService
             .Where(h => h.ClassId == classId && h.Status == HoldStatus.Held && h.ExpiresAt <= now)
             .ExecuteUpdateAsync(s => s.SetProperty(h => h.Status, HoldStatus.Expired));
 
+        var alreadyApplied = await _db.Holds.AnyAsync(h =>
+            h.ClassId == classId &&
+            h.StudentId == studentId &&
+            (h.Status == HoldStatus.Held || h.Status == HoldStatus.Confirmed));
+
+        if (alreadyApplied)
+            throw new AppException(409, "ALREADY_APPLIED", "This student already has an active application for this class.");
+
         await tx.CommitAsync();
         return new Hold { Class = cls };
     }
