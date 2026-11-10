@@ -2,6 +2,7 @@ using AdmissionApi.Common;
 using AdmissionApi.Data;
 using AdmissionApi.Dtos;
 using AdmissionApi.Models;
+using AdmissionApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -14,11 +15,13 @@ public class ClassesController : ControllerBase
 {
     private readonly AdmissionDbContext _db;
     private readonly IClock _clock;
+    private readonly HoldService _holds;
 
-    public ClassesController(AdmissionDbContext db, IClock clock)
+    public ClassesController(AdmissionDbContext db, IClock clock, HoldService holds)
     {
         _db = db;
         _clock = clock;
+        _holds = holds;
     }
 
     [HttpPost]
@@ -63,6 +66,22 @@ public class ClassesController : ControllerBase
         var result = await QuerySummariesAsync(_db.Classes.Where(c => c.Id == id));
         return result.FirstOrDefault()
             ?? throw new AppException(404, "CLASS_NOT_FOUND", "Class not found.");
+    }
+
+    [HttpPost("{classId}/holds")]
+    public async Task<IActionResult> CreateHold(string classId)
+    {
+        var studentId = StudentIdHeader.Require(Request);
+        var hold = await _holds.CreateHoldAsync(ParseClassId(classId), studentId);
+        return StatusCode(StatusCodes.Status201Created, new
+        {
+            holdId = hold.Id.ToString(),
+            classId = hold.ClassId.ToString(),
+            className = hold.Class?.Name ?? "",
+            studentId = hold.StudentId,
+            status = hold.Status.ToString().ToUpperInvariant(),
+            expiresAt = hold.ExpiresAt
+        });
     }
 
     private static Guid ParseClassId(string raw) =>
