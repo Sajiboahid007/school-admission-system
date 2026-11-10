@@ -1,4 +1,5 @@
 using AdmissionApi.Data;
+using AdmissionApi.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,13 @@ builder.Services.AddDbContext<AdmissionDbContext>((sp, options) =>
     options.UseNpgsql(config.GetConnectionString("Default"))
            .UseSnakeCaseNamingConvention();
 });
+
+builder.Services.AddOptions<HoldOptions>()
+    .Configure<IConfiguration>((options, config) =>
+    {
+        var raw = config["HOLD_DURATION_SECONDS"];
+        options.DurationSeconds = int.TryParse(raw, out var seconds) && seconds > 0 ? seconds : 600;
+    });
 
 var app = builder.Build();
 
