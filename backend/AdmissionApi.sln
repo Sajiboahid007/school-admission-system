@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{78AEA679-5CD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdmissionApi", "src\AdmissionApi\AdmissionApi.csproj", "{CF0BE577-4867-40FB-B4B0-5EA68E0DF164}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A3790789-85B4-48E2-93EA-FC3D325DEE65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdmissionApi.Tests", "tests\AdmissionApi.Tests\AdmissionApi.Tests.csproj", "{5B7F7F25-70C6-4919-9274-77E73584572B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,13 @@ Global
 		{CF0BE577-4867-40FB-B4B0-5EA68E0DF164}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF0BE577-4867-40FB-B4B0-5EA68E0DF164}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF0BE577-4867-40FB-B4B0-5EA68E0DF164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B7F7F25-70C6-4919-9274-77E73584572B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B7F7F25-70C6-4919-9274-77E73584572B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B7F7F25-70C6-4919-9274-77E73584572B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B7F7F25-70C6-4919-9274-77E73584572B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CF0BE577-4867-40FB-B4B0-5EA68E0DF164} = {78AEA679-5CDF-4D93-A15C-A12D86374988}
+		{5B7F7F25-70C6-4919-9274-77E73584572B} = {A3790789-85B4-48E2-93EA-FC3D325DEE65}
 	EndGlobalSection
 EndGlobal
