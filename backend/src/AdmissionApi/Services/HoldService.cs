@@ -118,4 +118,31 @@ public class HoldService
             _ => throw new AppException(409, "HOLD_NOT_CONFIRMABLE", "This application cannot be confirmed.")
         };
     }
+
+    public async Task CancelAsync(Guid holdId, string studentId)
+    {
+        var hold = await GetAsync(holdId);
+        if (hold.StudentId != studentId)
+            throw new AppException(403, "NOT_YOUR_HOLD", "This application belongs to another student.");
+
+        var now = _clock.UtcNow;
+        var updated = await _db.Holds
+            .Where(h => h.Id == holdId && h.Status == HoldStatus.Held && h.ExpiresAt > now)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(h => h.Status, HoldStatus.Cancelled)
+                .SetProperty(h => h.CancelledAt, now));
+
+        if (updated == 1) return;
+
+        var current = await GetAsync(holdId);
+        switch (HoldMapper.EffectiveStatus(current, now))
+        {
+            case HoldStatus.Cancelled:
+                return; // cancelling twice is fine -> still 204
+            case HoldStatus.Confirmed:
+                throw new AppException(409, "ALREADY_CONFIRMED", "Admission is already confirmed and cannot be cancelled.");
+            case HoldStatus.Expired:
+                throw new AppException(409, "HOLD_EXPIRED", "The time for this application is already over.");
+        }
+    }
 }

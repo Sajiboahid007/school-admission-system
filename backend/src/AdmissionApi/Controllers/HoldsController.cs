@@ -32,6 +32,14 @@ public class HoldsController : ControllerBase
         return HoldMapper.ToResponse(hold, _clock.UtcNow);
     }
 
+    [HttpDelete("holds/{holdId}")]
+    public async Task<IActionResult> Cancel(string holdId)
+    {
+        var studentId = StudentIdHeader.Require(Request);
+        await _holds.CancelAsync(ParseHoldId(holdId), studentId);
+        return NoContent();
+    }
+
     private static Guid ParseHoldId(string raw) =>
         Guid.TryParse(raw, out var id)
             ? id
