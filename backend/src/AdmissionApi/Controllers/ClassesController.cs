@@ -59,16 +59,20 @@ public class ClassesController : ControllerBase
     [HttpGet("{classId}")]
     public async Task<IActionResult> Get(string classId)
     {
-        if (!Guid.TryParse(classId, out var id))
+        var id = ParseClassId(classId);
+        if (id is null)
             return NotFound(new { error = "CLASS_NOT_FOUND", message = "Class not found." });
 
-        var result = await QuerySummariesAsync(_db.Classes.Where(c => c.Id == id));
+        var result = await QuerySummariesAsync(_db.Classes.Where(c => c.Id == id.Value));
         var cls = result.FirstOrDefault();
         if (cls is null)
             return NotFound(new { error = "CLASS_NOT_FOUND", message = "Class not found." });
 
         return Ok(cls);
     }
+
+    private static Guid? ParseClassId(string raw) =>
+        Guid.TryParse(raw, out var id) ? id : null;
 
     private async Task<List<ClassResponse>> QuerySummariesAsync(IQueryable<SchoolClass> query)
     {
