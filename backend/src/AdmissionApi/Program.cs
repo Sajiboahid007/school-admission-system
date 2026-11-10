@@ -26,6 +26,7 @@ builder.Services.AddOptions<HoldOptions>()
     });
 
 builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services.AddScoped<HoldService>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
