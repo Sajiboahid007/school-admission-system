@@ -1,10 +1,19 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
+import { StudentProvider } from './context/StudentContext';
+import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <StudentProvider>
+          <App />
+        </StudentProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>,
-)
+);

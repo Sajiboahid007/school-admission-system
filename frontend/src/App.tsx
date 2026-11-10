@@ -1,35 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from 'react-router-dom';
+import NavBar from './components/NavBar';
+import StudentIdBar from './components/StudentIdBar';
+import ClassListPage from './pages/ClassListPage';
+import CreateClassPage from './pages/CreateClassPage';
+import HoldPage from './pages/HoldPage';
+import MyHoldsPage from './pages/MyHoldsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      <header className="header">
+        <h1>School Admission</h1>
+        <StudentIdBar />
+        <NavBar />
+      </header>
+      <main className="main">
+        <Routes>
+          <Route path="/" element={<ClassListPage />} />
+          <Route path="/admin/classes/new" element={<CreateClassPage />} />
+          <Route path="/holds/:holdId" element={<HoldPage />} />
+          <Route path="/my-holds" element={<MyHoldsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
+    </div>
+  );
 }
-
-export default App
