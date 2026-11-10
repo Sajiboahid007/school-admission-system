@@ -26,6 +26,8 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
+await DbInitializer.MigrateAsync(app.Services, app.Logger);
+
 app.Run();
 
 // Needed so the test project can use WebApplicationFactory<Program>
