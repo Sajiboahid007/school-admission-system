@@ -1,3 +1,4 @@
+using AdmissionApi.Common;
 using AdmissionApi.Data;
 using AdmissionApi.Services;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,8 @@ builder.Services.AddOptions<HoldOptions>()
         var raw = config["HOLD_DURATION_SECONDS"];
         options.DurationSeconds = int.TryParse(raw, out var seconds) && seconds > 0 ? seconds : 600;
     });
+
+builder.Services.AddSingleton<IClock, SystemClock>();
 
 var app = builder.Build();
 
