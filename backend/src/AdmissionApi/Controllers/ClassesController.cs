@@ -73,15 +73,7 @@ public class ClassesController : ControllerBase
     {
         var studentId = StudentIdHeader.Require(Request);
         var hold = await _holds.CreateHoldAsync(ParseClassId(classId), studentId);
-        return StatusCode(StatusCodes.Status201Created, new
-        {
-            holdId = hold.Id.ToString(),
-            classId = hold.ClassId.ToString(),
-            className = hold.Class?.Name ?? "",
-            studentId = hold.StudentId,
-            status = hold.Status.ToString().ToUpperInvariant(),
-            expiresAt = hold.ExpiresAt
-        });
+        return StatusCode(StatusCodes.Status201Created, HoldMapper.ToCreated(hold, _clock.UtcNow));
     }
 
     private static Guid ParseClassId(string raw) =>
