@@ -52,4 +52,26 @@ public class ClassesController : ControllerBase
         var body = new ClassResponse(cls.Id.ToString(), cls.Name, cls.TotalSeats, 0, 0, cls.TotalSeats);
         return Created($"/classes/{cls.Id}", body);
     }
+
+    private async Task<List<ClassResponse>> QuerySummariesAsync(IQueryable<SchoolClass> query)
+    {
+        var now = _clock.UtcNow;
+
+        var rows = await query
+            .OrderBy(c => c.CreatedAt)
+            .Select(c => new
+            {
+                c.Id,
+                c.Name,
+                c.TotalSeats,
+                Held = c.Holds.Count(h => h.Status == HoldStatus.Held && h.ExpiresAt > now),
+                Confirmed = c.Holds.Count(h => h.Status == HoldStatus.Confirmed)
+            })
+            .ToListAsync();
+
+        return rows.Select(r => new ClassResponse(
+                r.Id.ToString(), r.Name, r.TotalSeats, r.Held, r.Confirmed,
+                Math.Max(0, r.TotalSeats - r.Held - r.Confirmed)))
+            .ToList();
+    }
 }
