@@ -3,6 +3,7 @@ using AdmissionApi.Data;
 using AdmissionApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace AdmissionApi.Services;
 
@@ -63,7 +64,16 @@ public class HoldService
         };
         _db.Holds.Add(hold);
 
-        await _db.SaveChangesAsync();
+        // safety net: the partial unique index
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            throw new AppException(409, "ALREADY_APPLIED", "This student already has an active application for this class.");
+        }
+
         await tx.CommitAsync();
 
         hold.Class = cls;
