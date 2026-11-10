@@ -45,7 +45,28 @@ public class HoldService
         if (alreadyApplied)
             throw new AppException(409, "ALREADY_APPLIED", "This student already has an active application for this class.");
 
+        var usedSeats = await _db.Holds.CountAsync(h =>
+            h.ClassId == classId &&
+            (h.Status == HoldStatus.Held || h.Status == HoldStatus.Confirmed));
+
+        if (usedSeats >= cls.TotalSeats)
+            throw new AppException(409, "NO_SEATS", "No seats are available in this class.");
+
+        var hold = new Hold
+        {
+            Id = Guid.NewGuid(),
+            ClassId = classId,
+            StudentId = studentId,
+            Status = HoldStatus.Held,
+            CreatedAt = now,
+            ExpiresAt = now.AddSeconds(_options.DurationSeconds)
+        };
+        _db.Holds.Add(hold);
+
+        await _db.SaveChangesAsync();
         await tx.CommitAsync();
-        return new Hold { Class = cls };
+
+        hold.Class = cls;
+        return hold;
     }
 }
