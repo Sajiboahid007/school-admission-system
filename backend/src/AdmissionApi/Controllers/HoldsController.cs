@@ -40,6 +40,15 @@ public class HoldsController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("me/holds")]
+    public async Task<List<HoldResponse>> Mine()
+    {
+        var studentId = StudentIdHeader.Require(Request);
+        var now = _clock.UtcNow;
+        var holds = await _holds.GetForStudentAsync(studentId);
+        return holds.Select(h => HoldMapper.ToResponse(h, now)).ToList();
+    }
+
     private static Guid ParseHoldId(string raw) =>
         Guid.TryParse(raw, out var id)
             ? id

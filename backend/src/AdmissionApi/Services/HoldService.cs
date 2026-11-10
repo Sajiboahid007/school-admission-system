@@ -145,4 +145,11 @@ public class HoldService
                 throw new AppException(409, "HOLD_EXPIRED", "The time for this application is already over.");
         }
     }
+
+    public Task<List<Hold>> GetForStudentAsync(string studentId) =>
+        _db.Holds.AsNoTracking()
+            .Include(h => h.Class)
+            .Where(h => h.StudentId == studentId)
+            .OrderByDescending(h => h.CreatedAt)
+            .ToListAsync();
 }
