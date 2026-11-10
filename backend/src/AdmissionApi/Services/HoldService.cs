@@ -79,4 +79,8 @@ public class HoldService
         hold.Class = cls;
         return hold;
     }
+
+    public async Task<Hold> GetAsync(Guid holdId) =>
+        await _db.Holds.AsNoTracking().Include(h => h.Class).FirstOrDefaultAsync(h => h.Id == holdId)
+        ?? throw new AppException(404, "HOLD_NOT_FOUND", "Application not found.");
 }
