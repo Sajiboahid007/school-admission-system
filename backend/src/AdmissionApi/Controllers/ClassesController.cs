@@ -53,6 +53,9 @@ public class ClassesController : ControllerBase
         return Created($"/classes/{cls.Id}", body);
     }
 
+    [HttpGet]
+    public Task<List<ClassResponse>> List() => QuerySummariesAsync(_db.Classes);
+
     private async Task<List<ClassResponse>> QuerySummariesAsync(IQueryable<SchoolClass> query)
     {
         var now = _clock.UtcNow;
