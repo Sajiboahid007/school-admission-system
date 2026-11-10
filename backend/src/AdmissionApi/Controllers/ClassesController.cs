@@ -56,6 +56,20 @@ public class ClassesController : ControllerBase
     [HttpGet]
     public Task<List<ClassResponse>> List() => QuerySummariesAsync(_db.Classes);
 
+    [HttpGet("{classId}")]
+    public async Task<IActionResult> Get(string classId)
+    {
+        if (!Guid.TryParse(classId, out var id))
+            return NotFound(new { error = "CLASS_NOT_FOUND", message = "Class not found." });
+
+        var result = await QuerySummariesAsync(_db.Classes.Where(c => c.Id == id));
+        var cls = result.FirstOrDefault();
+        if (cls is null)
+            return NotFound(new { error = "CLASS_NOT_FOUND", message = "Class not found." });
+
+        return Ok(cls);
+    }
+
     private async Task<List<ClassResponse>> QuerySummariesAsync(IQueryable<SchoolClass> query)
     {
         var now = _clock.UtcNow;
