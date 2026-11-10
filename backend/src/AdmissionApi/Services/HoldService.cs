@@ -83,4 +83,25 @@ public class HoldService
     public async Task<Hold> GetAsync(Guid holdId) =>
         await _db.Holds.AsNoTracking().Include(h => h.Class).FirstOrDefaultAsync(h => h.Id == holdId)
         ?? throw new AppException(404, "HOLD_NOT_FOUND", "Application not found.");
+
+    public async Task<Hold> ConfirmAsync(Guid holdId, string studentId)
+    {
+        var hold = await GetAsync(holdId);
+        var now = _clock.UtcNow;
+
+        var updated = await _db.Holds
+            .Where(h => h.Id == holdId && h.Status == HoldStatus.Held && h.ExpiresAt > now)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(h => h.Status, HoldStatus.Confirmed)
+                .SetProperty(h => h.ConfirmedAt, now));
+
+        if (updated == 1)
+        {
+            hold.Status = HoldStatus.Confirmed;
+            hold.ConfirmedAt = now;
+            return hold;
+        }
+
+        return hold;
+    }
 }
