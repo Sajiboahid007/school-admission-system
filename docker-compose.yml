@@ -6,9 +6,52 @@ services:
       POSTGRES_PASSWORD: admission
       POSTGRES_DB: admission
     ports:
-      - "5433:5432"   # 5433 on the host, so it does not clash with a local Postgres
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admission -d admission"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=admission;Username=admission;Password=admission"
+      HOLD_DURATION_SECONDS: "${HOLD_DURATION_SECONDS:-600}"
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      # The BROWSER calls this URL, so it is localhost, not "backend"
+      API_URL: "http://localhost:8080"
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend-tests:
+    profiles: ["test"]
+    build:
+      context: ./backend
+      target: test
+    environment:
+      TEST_DB_CONNECTION: "Host=db;Port=5432;Database=admission_test;Username=admission;Password=admission"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend-tests:
+    profiles: ["test"]
+    build:
+      context: ./frontend
+      target: test
 
 volumes:
   pgdata:
