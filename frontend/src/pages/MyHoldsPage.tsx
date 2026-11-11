@@ -10,15 +10,27 @@ import { usePolling } from '../hooks/usePolling';
 export default function MyHoldsPage() {
   const { studentId, isValid } = useStudent();
   const [holds, setHolds] = useState<Hold[] | null>(null);
+  const [offsetMs, setOffsetMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const holdsRef = useRef<Hold[] | null>(null);
 
   const load = useCallback(async () => {
     if (!isValid) return;
     try {
-      setHolds(await getMyHolds(studentId));
+      const data = await getMyHolds(studentId);
+      setHolds(data);
+      holdsRef.current = data;
+      const withServerTime = data.find((h) => h.serverTime);
+      if (withServerTime?.serverTime) {
+        setOffsetMs(new Date(withServerTime.serverTime).getTime() - Date.now());
+      }
       setError(null);
     } catch (err) {
-      setError(friendlyMessage(err));
+      if (holdsRef.current !== null) {
+        setError('সংযোগ বিচ্ছিন্ন, শেষ তথ্য দেখানো হচ্ছে। আবার সংযোগের চেষ্টা চলছে…');
+      } else {
+        setError(friendlyMessage(err));
+      }
     }
   }, [studentId, isValid]);
 
@@ -28,6 +40,7 @@ export default function MyHoldsPage() {
   useEffect(() => {
     if (prevStudentId.current !== studentId) {
       prevStudentId.current = studentId;
+      holdsRef.current = null;
       if (isValid) {
         void load();
       } else {
@@ -58,7 +71,7 @@ export default function MyHoldsPage() {
             </thead>
             <tbody>
               {holds.map((h) => {
-                const isOver = !h.expiresAt || new Date(h.expiresAt).getTime() <= Date.now();
+                const isOver = !h.expiresAt || new Date(h.expiresAt).getTime() <= (Date.now() + offsetMs);
                 const status: HoldStatus = h.status === 'HELD' && isOver ? 'EXPIRED' : h.status;
                 const expiry = h.expiresAt
                   ? new Date(h.expiresAt).toLocaleTimeString('bn-BD')

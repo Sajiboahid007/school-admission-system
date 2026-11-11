@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createHold, getClasses } from '../api/classes';
 import { friendlyMessage } from '../api/errors';
@@ -14,14 +14,21 @@ export default function ClassListPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const classesRef = useRef<SchoolClass[] | null>(null);
 
   const load = useCallback(async () => {
     try {
-      setClasses(await getClasses());
+      const data = await getClasses();
+      setClasses(data);
+      classesRef.current = data;
       setLoadError(null);
     } catch (err) {
       // keep showing the last data we had, just show a warning on top
-      setLoadError(friendlyMessage(err));
+      if (classesRef.current !== null) {
+        setLoadError('সংযোগ বিচ্ছিন্ন, শেষ তথ্য দেখানো হচ্ছে। আবার সংযোগের চেষ্টা চলছে…');
+      } else {
+        setLoadError(friendlyMessage(err));
+      }
     }
   }, []);
 

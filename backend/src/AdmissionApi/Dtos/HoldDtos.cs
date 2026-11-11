@@ -5,7 +5,8 @@ public record HoldResponse(
     string ClassId,
     string ClassName,
     string Status,
-    DateTime ExpiresAt);
+    DateTime ExpiresAt,
+    DateTime ServerTime);
 
 public record CreatedHoldResponse(
     string HoldId,
@@ -13,4 +14,5 @@ public record CreatedHoldResponse(
     string ClassName,
     string StudentId,
     string Status,
-    DateTime ExpiresAt);
+    DateTime ExpiresAt,
+    DateTime ServerTime);

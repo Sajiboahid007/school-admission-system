@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { friendlyMessage } from '../api/errors';
@@ -17,16 +17,23 @@ export default function HoldPage() {
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [busy, setBusy] = useState(false);
+  const holdRef = useRef<Hold | null>(null);
 
   const load = useCallback(async () => {
     try {
       const h = await getHold(holdId);
       setHold(h);
+      holdRef.current = h;
       if (h.serverTime) setOffsetMs(new Date(h.serverTime).getTime() - Date.now());
       setError(null);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 404) setNotFound(true);
-      else setError(friendlyMessage(err));
+      if (err instanceof ApiError && err.status === 404) {
+        setNotFound(true);
+      } else if (holdRef.current !== null) {
+        setError('সংযোগ বিচ্ছিন্ন, শেষ তথ্য দেখানো হচ্ছে। আবার সংযোগের চেষ্টা চলছে…');
+      } else {
+        setError(friendlyMessage(err));
+      }
     }
   }, [holdId]);
 
@@ -39,10 +46,18 @@ export default function HoldPage() {
     setError(null);
     try {
       await action();
+      await load();
     } catch (err) {
       setError(friendlyMessage(err));
+      try {
+        const h = await getHold(holdId);
+        setHold(h);
+        holdRef.current = h;
+        if (h.serverTime) setOffsetMs(new Date(h.serverTime).getTime() - Date.now());
+      } catch {
+        /* ignore */
+      }
     } finally {
-      await load();
       setBusy(false);
     }
   }

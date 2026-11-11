@@ -4,6 +4,7 @@ body { margin: 0; font-family: system-ui, "Noto Sans Bengali", sans-serif; backg
 .header h1 { font-size: 20px; margin: 0; }
 .main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
 .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; background: #fff; }
 th, td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: left; }
 button { padding: 8px 14px; border: 0; border-radius: 6px; background: #1d5fbf; color: #fff; cursor: pointer; }
